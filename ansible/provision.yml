@@ -1,0 +1,112 @@
+
+---
+- name: Configure OSPF routers
+  hosts: routers
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - defaults/main.yml
+
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install base utilities
+      apt:
+        name:
+          - vim
+          - traceroute
+          - net-tools
+          - curl
+          - gnupg
+          - ca-certificates
+        state: present
+
+    - name: Stop and disable UFW
+      service:
+        name: ufw
+        state: stopped
+        enabled: false
+      failed_when: false
+
+    - name: Add FRR repository signing key
+      apt_key:
+        url: https://deb.frrouting.org/frr/keys.asc
+        state: present
+
+    - name: Add FRR repository
+      apt_repository:
+        repo: "deb https://deb.frrouting.org/frr {{ ansible_distribution_release }} frr-stable"
+        state: present
+        filename: frr
+
+    - name: Update apt cache after adding FRR repository
+      apt:
+        update_cache: true
+
+    - name: Install FRR packages
+      apt:
+        name:
+          - frr
+          - frr-pythontools
+        state: present
+
+    - name: Enable IPv4 forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: "1"
+        state: present
+        sysctl_set: true
+        reload: true
+
+    - name: Disable reverse path filtering globally
+      sysctl:
+        name: net.ipv4.conf.all.rp_filter
+        value: "0"
+        state: present
+        sysctl_set: true
+        reload: true
+
+    - name: Disable reverse path filtering by default
+      sysctl:
+        name: net.ipv4.conf.default.rp_filter
+        value: "0"
+        state: present
+        sysctl_set: true
+        reload: true
+
+    - name: Configure FRR daemons
+      template:
+        src: templates/daemons
+        dest: /etc/frr/daemons
+        owner: frr
+        group: frr
+        mode: "0640"
+      notify: Restart FRR
+
+    - name: Configure FRR OSPF
+      template:
+        src: templates/frr.conf.j2
+        dest: /etc/frr/frr.conf
+        owner: frr
+        group: frr
+        mode: "0640"
+      notify: Restart FRR
+
+    - name: Enable and start FRR
+      service:
+        name: frr
+        state: started
+        enabled: true
+
+    - name: Apply FRR configuration changes
+      meta: flush_handlers
+
+  handlers:
+    - name: Restart FRR
+      service:
+        name: frr
+        state: restarted

@@ -1,0 +1,29 @@
+﻿# Vagrant
+.vagrant/
+Vagrantfile.backup
+
+# SSH keys and credentials
+*.pem
+*.key
+id_rsa
+id_ed25519
+ansible/keys/
+
+# Ansible
+*.retry
+*.log
+
+# Windows diagnostics
+wfpdiag/
+wfpstate.xml
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.bak
+wfpdiag.cab
