@@ -1,3 +1,4 @@
+
 frr version 8.1
 frr defaults traditional
 hostname {{ ansible_hostname }}
@@ -10,7 +11,7 @@ interface enp0s8
  description r1-r2
  ip address 10.0.10.1/30
  ip ospf mtu-ignore
- ip ospf cost 1000
+ ip ospf cost {{ ospf_costs[ospf_mode].router1_r1_r2 }}
  ip ospf hello-interval 10
  ip ospf dead-interval 30
 !
@@ -42,7 +43,7 @@ interface enp0s8
  description r2-r1
  ip address 10.0.10.2/30
  ip ospf mtu-ignore
- ip ospf cost 1000
+ ip ospf cost {{ ospf_costs[ospf_mode].router2_r2_r1 }}
  ip ospf hello-interval 10
  ip ospf dead-interval 30
 !

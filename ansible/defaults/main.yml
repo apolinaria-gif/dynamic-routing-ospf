@@ -1,2 +1,16 @@
+
 ---
 router_id_enable: false
+
+# OSPF routing mode: asymmetric or symmetric
+ospf_mode: asymmetric
+
+# OSPF costs for the R1-R2 link
+ospf_costs:
+  asymmetric:
+    router1_r1_r2: 10
+    router2_r2_r1: 1000
+
+  symmetric:
+    router1_r1_r2: 1000
+    router2_r2_r1: 1000
